@@ -1,15 +1,28 @@
-export const loggerMiddleware = (req, res, next) => {
-  const start = Date.now();
-  const { method, url } = req;
+import winston from "winston";
+import morgan from "morgan";
 
-  console.log(`[INFO] Incoming Request: ${method} ${url}`);
+// Winston logger configuration
+const logger = winston.createLogger({
+  level: "info", // Set the log level
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(
+      ({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`
+    )
+  ),
+  transports: [
+    new winston.transports.Console(), // Log to console
+    new winston.transports.File({ filename: "logs/app.log" }), // Log to a file
+  ],
+});
 
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    console.log(
-      `[INFO] Completed ${method} ${url} with status ${res.statusCode} in ${duration}ms`
-    );
-  });
+// Morgan middleware setup for logging HTTP requests
+const loggerMiddleware = morgan("combined", {
+  stream: {
+    write: (message) => {
+      logger.info(message.trim()); // Log each HTTP request
+    },
+  },
+});
 
-  next();
-};
+export { logger, loggerMiddleware };

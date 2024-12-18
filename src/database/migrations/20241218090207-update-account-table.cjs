@@ -1,5 +1,3 @@
-"use strict";
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addColumn("accounts", "email", {
@@ -8,7 +6,7 @@ module.exports = {
     });
 
     await queryInterface.sequelize.query(
-      `UPDATE "accounts" SET "email" = 'default@gmail.com' WHERE "email" IS NULL`
+      'UPDATE "accounts" SET "email" = \'default@gmail.com\' WHERE "email" IS NULL'
     );
 
     await queryInterface.changeColumn("accounts", "email", {

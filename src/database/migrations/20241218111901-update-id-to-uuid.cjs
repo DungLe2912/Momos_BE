@@ -1,5 +1,3 @@
-"use strict";
-
 module.exports = {
   // 'up' function is used to apply the migration (e.g., change column types).
   up: async (queryInterface, Sequelize) => {
@@ -29,7 +27,7 @@ module.exports = {
     const accountIds = accounts[0]; // Extract account IDs from query result
 
     // Update each row with a new UUID for 'new_id'
-    for (let account of accountIds) {
+    for (const account of accountIds) {
       await queryInterface.bulkUpdate(
         "accounts",
         { new_id: Sequelize.fn("uuid_generate_v4") }, // Generate UUID for the 'new_id' column using PostgreSQL function

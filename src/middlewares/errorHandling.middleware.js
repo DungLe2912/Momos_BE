@@ -1,4 +1,4 @@
-export const errorHandlingMiddleware = (err, req, res, next) => {
+export const errorHandlingMiddleware = (err, req, res) => {
   console.error(`[ERROR] ${err.message}`);
   console.error(err.stack);
 
