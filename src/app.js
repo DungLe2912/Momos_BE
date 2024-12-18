@@ -3,11 +3,17 @@ import { Sequelize } from "sequelize";
 import "dotenv/config";
 
 import { development, test, production } from "./config/sequelize.cjs";
+import { authRouter } from "./routers/auth.router.js";
+import {
+  errorHandlingMiddleware,
+  loggerMiddleware,
+} from "./middlewares/index.js";
 
 const app = express();
-const port = 3000;
 
-const { NODE_ENV } = process.env;
+const { NODE_ENV, PORT } = process.env;
+
+const port = PORT || 3000;
 let env = development;
 switch (NODE_ENV) {
   case "production":
@@ -37,12 +43,15 @@ sequelize
 
 // Middleware
 app.use(express.json());
+app.use(loggerMiddleware);
+app.use("/api/auth", authRouter);
 
 // Example route
 app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
 
+app.use(errorHandlingMiddleware);
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

@@ -1,9 +1,9 @@
 import { Sequelize } from "sequelize";
 
-import * as config from "@/config/sequelize.cjs";
+import * as config from "../config/sequelize.cjs";
 
 // import models
-import accountsModel from "./models/accounts";
+import accountsModel from "./models/accounts.js";
 
 // Configuration
 const env = process.env.NODE_ENV;

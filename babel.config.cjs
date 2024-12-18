@@ -3,8 +3,20 @@ module.exports = {
     [
       "@babel/preset-env",
       {
-        targets: { node: "current" },
-        modules: "auto",
+        targets: {
+          node: true,
+        },
+      },
+    ],
+  ],
+  plugins: [
+    [
+      "module-resolver",
+      {
+        root: ["./src"],
+        alias: {
+          "@": "./src",
+        },
       },
     ],
   ],
