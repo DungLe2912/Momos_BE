@@ -2,11 +2,18 @@
   "name": "momos-apis",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "src/app.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "NODE_ENV=production node src/app.js",
+    "dev": "nodemon src/app.js",
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:seed": "sequelize-cli db:seed:all",
+    "build": "babel src -d dist",
+    "clean": "rimraf dist",
+    "start:prod": "node dist/app.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +27,22 @@
     "morgan": "^1.10.0",
     "nodemon": "^3.1.9",
     "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
     "puppeteer": "^23.10.4",
+    "sequelize": "^6.37.5",
+    "sequelize-cli": "^6.6.2",
     "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.26.4",
+    "@babel/core": "^7.26.0",
+    "@babel/node": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/register": "^7.25.9",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-import-resolver-babel-module": "^5.3.2",
+    "eslint-plugin-import": "^2.31.0"
   }
 }
