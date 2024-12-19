@@ -40,13 +40,8 @@ class ScraperService {
         duration: 10000,
       },
       defaultJobOptions: {
-        removeOnComplete: {
-          age: 24 * 3600, // Giữ completed jobs trong 24 giờ
-          count: 1000, // Giữ 1000 completed jobs gần nhất
-        },
-        removeOnFail: {
-          age: 7 * 24 * 3600, // Giữ failed jobs trong 7 ngày
-        },
+        removeOnComplete: false, // Do not remove completed jobs
+        removeOnFail: false, // Do not remove failed jobs
         attempts: 3,
         backoff: {
           type: "exponential",
@@ -56,12 +51,22 @@ class ScraperService {
     });
 
     // Thêm event listeners để theo dõi job states
-    this.scrapeQueue.on("completed", (job) => {
-      this.updateJobStats(job, "completed");
+    this.scrapeQueue.on("active", async (job) => {
+      console.log(`Job ${job.id} active`);
+      // this.updateJobStats(job, "completed");
+      await this.redis.set(`job:${job.id}`, "active", "EX", CACHE_TTL);
     });
 
-    this.scrapeQueue.on("failed", (job) => {
-      this.updateJobStats(job, "failed");
+    this.scrapeQueue.on("completed", async (job) => {
+      console.log(`Job ${job.id} completed`);
+      // this.updateJobStats(job, "completed");
+      await this.redis.set(`job:${job.id}`, "completed", "EX", CACHE_TTL);
+    });
+
+    this.scrapeQueue.on("failed", async (job) => {
+      console.log(`Job ${job.id} failed`);
+      // this.updateJobStats(job, "failed");
+      await this.redis.set(`job:${job.id}`, "failed", "EX", CACHE_TTL);
     });
 
     // Khởi tạo Redis key để lưu job stats
@@ -266,7 +271,7 @@ class ScraperService {
         try {
           await page.goto(url, {
             waitUntil: "networkidle0",
-            timeout: 30000,
+            timeout: 60000,
           });
 
           const media = await page.evaluate(() => {
@@ -554,58 +559,16 @@ class ScraperService {
 
   async getJobsStatus(jobIds, accountId) {
     try {
+      // Retrieve job statuses from Redis
       const jobs = await Promise.all(
-        jobIds.map((id) => this.scrapeQueue.getJob(id))
-      );
-
-      const statuses = await Promise.all(
-        jobs.map(async (job) => {
-          if (!job) return { id: job, status: "not_found" };
-
-          const state = await job.getState();
-          // eslint-disable-next-line no-underscore-dangle
-          const progress = job._progress;
-          const { urls } = job.data;
-
-          // Kiểm tra quyền truy cập
-          if (job.data.accountId !== accountId) {
-            return { id: job.id, status: "unauthorized" };
-          }
-
-          // Lấy kết quả từ database nếu job đã hoàn thành
-          let results = [];
-          if (state === "completed") {
-            results = await db.models.media.findAll({
-              where: {
-                url: { [Op.in]: urls },
-                accountId,
-              },
-              attributes: ["url", "images", "videos"],
-            });
-          }
-
-          return {
-            id: job.id,
-            status: state,
-            progress,
-            urls,
-            results: state === "completed" ? results : undefined,
-            error: job.failedReason,
-            processedAt: job.processedOn,
-            finishedAt: job.finishedOn,
-          };
+        jobIds.map(async (id) => {
+          const status = await this.redis.get(`job:${id}`);
+          return { id, status };
         })
       );
 
       return {
-        jobs: statuses,
-        summary: {
-          total: statuses.length,
-          completed: statuses.filter((s) => s.status === "completed").length,
-          failed: statuses.filter((s) => s.status === "failed").length,
-          waiting: statuses.filter((s) => s.status === "waiting").length,
-          active: statuses.filter((s) => s.status === "active").length,
-        },
+        jobs,
       };
     } catch (error) {
       logger.error("Failed to get jobs status:", error);
@@ -699,7 +662,7 @@ class ScraperService {
   async cleanup() {
     logger.info("Cleaning up resources...");
 
-    await this.redis.flushall();
+    // await this.redis.flushall();
 
     await Promise.all([
       ...this.browserPool.map((browser) => browser.close()),

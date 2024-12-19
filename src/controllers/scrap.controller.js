@@ -26,8 +26,9 @@ export class ScrapingController {
       const result = await ScraperService.addScrapingTask(urls, accountId);
 
       return res.status(200).json({
+        success: true,
         message: "Scraping tasks created successfully",
-        ...result,
+        data: result,
       });
     } catch (error) {
       logger.error("Scraping request failed:", error);

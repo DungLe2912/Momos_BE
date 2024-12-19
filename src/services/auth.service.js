@@ -42,7 +42,7 @@ export class AuthService {
         email: user.email,
       },
       accessTokenSecret,
-      "10m"
+      process.env.ACCESS_TOKEN_EXPIRY
     );
     const refreshToken = await this.#generateToken(
       {
@@ -50,7 +50,7 @@ export class AuthService {
         email: user.email,
       },
       refreshTokenSecret,
-      "7d"
+      process.env.REFRESH_TOKEN_EXPIRY
     );
     return {
       user: {
@@ -78,7 +78,7 @@ export class AuthService {
         email: user.email,
       },
       process.env.ACCESS_SECRET_KEY,
-      "10m"
+      process.env.ACCESS_TOKEN_EXPIRY
     );
     const newRefreshToken = await this.#generateToken(
       {
@@ -86,7 +86,7 @@ export class AuthService {
         email: user.email,
       },
       process.env.REFRESH_SECRET_KEY,
-      "7d"
+      process.env.REFRESH_TOKEN_EXPIRY
     );
 
     return {
