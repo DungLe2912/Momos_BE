@@ -1,15 +1,21 @@
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
-  class Media extends Model {}
+  class Media extends Model {
+    static associate(models) {
+      Media.belongsTo(models.accounts, {
+        foreignKey: "accountId",
+        as: "accounts",
+      });
+    }
+  }
 
   Media.init(
     {
-      // 'id' will be of UUID type, with auto-generation of UUID values.
       id: {
         type: DataTypes.UUID,
         primaryKey: true,
-        defaultValue: DataTypes.UUIDV4, // Automatically generate a UUID when a new record is created.
+        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
       url: {
@@ -17,19 +23,29 @@ export default (sequelize) => {
         allowNull: false,
       },
       images: {
-        type: DataTypes.JSONB, // Store images as an array of URLs
+        type: DataTypes.JSONB,
         allowNull: false,
       },
       videos: {
-        type: DataTypes.JSONB, // Store videos as an array of URLs
+        type: DataTypes.JSONB,
         allowNull: false,
+      },
+      accountId: {
+        type: DataTypes.UUID,
+        allowNull: false, // Khoá ngoại không thể null
+        references: {
+          model: "accounts", // Tên bảng liên kết
+          key: "id", // Khoá chính của bảng accounts
+        },
+        onDelete: "CASCADE", // Xoá media khi account bị xoá
+        onUpdate: "CASCADE", // Cập nhật media khi account thay đổi id
       },
     },
     {
       sequelize,
       modelName: "media",
-      timestamps: true, // Automatically manage 'createdAt' and 'updatedAt' columns.
-      paranoid: true, // Soft deletes ('deletedAt' column for logical deletions).
+      timestamps: true,
+      paranoid: true,
     }
   );
 

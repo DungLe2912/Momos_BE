@@ -21,10 +21,10 @@ class ScraperService {
     this.scrapeQueue.process(10, this.processJob.bind(this));
   }
 
-  async processScrapedData(url, media) {
+  async processScrapedData(url, media, accountId) {
     const { images, videos } = media;
     try {
-      await db.models.media.create({ url, images, videos });
+      await db.models.media.create({ url, images, videos, accountId });
       return { url, images, videos };
     } catch (error) {
       logger.error(`Failed to save scraped data for ${url}: ${error.message}`);
@@ -89,7 +89,7 @@ class ScraperService {
     }
   }
 
-  async addScrapingTask(url) {
+  async addScrapingTask(url, accountId) {
     // Check cache
     const cachedResult = await this.redis.get(url);
     if (cachedResult) {
@@ -99,7 +99,9 @@ class ScraperService {
 
     // Kiểm tra xem URL này đã có trong queue chưa
     const existingJobs = await this.scrapeQueue.getJobs(["waiting", "active"]);
-    const isUrlQueued = existingJobs.some((job) => job.data.url === url);
+    const isUrlQueued = existingJobs.some(
+      (job) => job.data.url === url && job.data.accountId === accountId
+    );
 
     if (isUrlQueued) {
       logger.info(`URL already queued: ${url}`);
@@ -108,7 +110,7 @@ class ScraperService {
 
     // Add job into queue
     logger.info(`Adding URL to queue: ${url}`);
-    const job = await this.scrapeQueue.add({ url });
+    const job = await this.scrapeQueue.add({ url, accountId });
 
     return {
       status: "queued",
@@ -137,7 +139,7 @@ class ScraperService {
   }
 
   async processJob(job) {
-    const { url } = job.data;
+    const { url, accountId } = job.data;
     const maxRetries = 3;
     let lastError;
 
@@ -149,7 +151,7 @@ class ScraperService {
         );
 
         const media = await this.scrapeImageAndVideoURLs(url);
-        const result = await this.processScrapedData(url, media);
+        const result = await this.processScrapedData(url, media, accountId);
 
         // Cache kết quả
         await this.redis.set(url, JSON.stringify(result), "EX", 3600);

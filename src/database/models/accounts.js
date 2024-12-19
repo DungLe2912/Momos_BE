@@ -1,7 +1,14 @@
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
-  class Accounts extends Model {}
+  class Accounts extends Model {
+    static associate(models) {
+      Accounts.hasMany(models.media, {
+        foreignKey: "accountId",
+        as: "media",
+      });
+    }
+  }
 
   Accounts.init(
     {
