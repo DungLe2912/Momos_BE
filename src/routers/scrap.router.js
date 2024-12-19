@@ -7,3 +7,6 @@ export const scrapingRouter = express.Router();
 scrapingRouter.use(authenticateToken);
 
 scrapingRouter.post("/scrape-media", ScrapingController.scrapeMedia);
+scrapingRouter.get("/results", ScrapingController.getResults);
+scrapingRouter.get("/status/:jobIds", ScrapingController.getJobStatus);
+scrapingRouter.get("/stats", ScrapingController.getStats);

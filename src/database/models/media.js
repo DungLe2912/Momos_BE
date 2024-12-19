@@ -22,30 +22,30 @@ export default (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      images: {
-        type: DataTypes.JSONB,
+      type: {
+        type: DataTypes.ENUM("image", "video"),
         allowNull: false,
       },
-      videos: {
-        type: DataTypes.JSONB,
-        allowNull: false,
+      src: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       accountId: {
         type: DataTypes.UUID,
-        allowNull: false, // Khoá ngoại không thể null
+        allowNull: false,
         references: {
-          model: "accounts", // Tên bảng liên kết
-          key: "id", // Khoá chính của bảng accounts
+          model: "accounts",
+          key: "id",
         },
-        onDelete: "CASCADE", // Xoá media khi account bị xoá
-        onUpdate: "CASCADE", // Cập nhật media khi account thay đổi id
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
     },
     {
       sequelize,
       modelName: "media",
       timestamps: true,
-      paranoid: true,
+      paranoid: true, // Soft delete
     }
   );
 

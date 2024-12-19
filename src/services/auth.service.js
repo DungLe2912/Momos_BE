@@ -39,7 +39,7 @@ export class AuthService {
         email: user.email,
       },
       accessTokenSecret,
-      "10m"
+      "10d"
     );
     const refreshToken = await this.#generateToken(
       {

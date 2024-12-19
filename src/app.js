@@ -3,6 +3,8 @@ import "dotenv/config";
 
 import { authRouter } from "./routers/auth.router.js";
 import { scrapingRouter } from "./routers/scrap.router.js";
+import { mediaRouter } from "./routers/media.router.js";
+
 import {
   errorHandlingMiddleware,
   loggerMiddleware,
@@ -18,8 +20,10 @@ const port = PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(loggerMiddleware);
+// Router
 app.use("/api/auth", authRouter);
 app.use("/api/scrape", scrapingRouter);
+app.use("/api/media", mediaRouter);
 
 // Example route
 app.get("/", (req, res) => {
