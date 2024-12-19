@@ -48,7 +48,7 @@ services:
       timeout: 10s
       retries: 3
     logging: *default-logging
-    command: sh -c "node src/app.js && npm run db:seed " # Ensure seed is run before starting the app
+    command: sh -c "node src/app.js"
 
   postgres:
     image: postgres:15-alpine

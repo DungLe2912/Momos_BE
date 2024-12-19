@@ -42,4 +42,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Start the application
-CMD ["sh", "-c", "node src/app.js && npm run db:seed"]
+CMD ["sh", "-c", "node src/app.js"]
