@@ -25,7 +25,9 @@ export class AuthService {
 
   static async login(account) {
     const { email, password } = account;
-    const user = await db.models.accounts.findOne({ where: { email } });
+    const user = await db.models.accounts
+      .scope("withPassword")
+      .findOne({ where: { email } });
     if (!user) throw new Error("User not found");
     const isValidPassword = await this.#comparePassword(
       password,
@@ -51,7 +53,11 @@ export class AuthService {
       "7d"
     );
     return {
-      user,
+      user: {
+        id: user.id,
+        email: user.email,
+        userName: user.userName,
+      },
       tokens: { accessToken, refreshToken },
     };
   }

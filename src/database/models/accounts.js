@@ -36,6 +36,14 @@ export default (sequelize) => {
     {
       sequelize,
       modelName: "accounts",
+      defaultScope: {
+        attributes: { exclude: ["password"] },
+      },
+      scopes: {
+        withPassword: {
+          attributes: { include: ["password"] },
+        },
+      },
       timestamps: true, // Automatically manage 'createdAt' and 'updatedAt' columns.
       paranoid: true, // Soft deletes ('deletedAt' column for logical deletions).
     }
