@@ -1,6 +1,7 @@
-import { hash, compare } from "bcrypt";
+import { hash, compare, genSalt } from "bcrypt";
 import jwt from "jsonwebtoken";
 
+import { logger } from "../middlewares/logger.middleware.js";
 import db from "../database/index.js";
 
 const { sign } = jwt;
@@ -86,5 +87,31 @@ export class AuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
+  }
+
+  static async signup({ email, password, fullName }) {
+    // Check if email already exists
+    const existingUser = await db.models.accounts.findOne({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new Error("Email already exists");
+    }
+
+    // Hash password
+    const salt = await genSalt(10);
+    const hashedPassword = await hash(password, salt);
+
+    // Create account
+    const account = await db.models.accounts.create({
+      email,
+      password: hashedPassword,
+      userName: fullName || null,
+    });
+
+    logger.info(`New account created: ${account.id}`);
+
+    return account;
   }
 }
