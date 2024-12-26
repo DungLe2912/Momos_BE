@@ -15,6 +15,7 @@ import { Op } from "sequelize";
 
 import { logger } from "../middlewares/logger.middleware.js";
 import db from "../database/index.js";
+import { browserManager } from "../utils/browser.js";
 
 const BATCH_SIZE = 100; // Số lượng URLs xử lý trong 1 batch
 const CONCURRENT_JOBS = 5; // Số lượng jobs chạy đồng thời
@@ -25,8 +26,14 @@ const BROWSER_POOL_SIZE = 3; // Số lượng browser instances trong pool
 class ScraperService {
   constructor() {
     this.redis = new Redis({
+      host: process.env.REDIS_HOST || "redis",
+      port: parseInt(process.env.REDIS_PORT || "6379"),
+      password: process.env.REDIS_PASSWORD,
+      retryStrategy: (times) => {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
       maxRetriesPerRequest: 3,
-      enableReadyCheck: false,
     });
 
     this.scrapeQueue = new Bull("scrapeQueue", {
@@ -72,9 +79,6 @@ class ScraperService {
     // Khởi tạo Redis key để lưu job stats
     this.jobStatsKey = "scrapeQueue:stats";
 
-    this.browserPool = [];
-    this.initBrowserPool();
-
     // Process queue với concurrency control
     this.scrapeQueue.process(CONCURRENT_JOBS, this.processJob.bind(this));
 
@@ -97,38 +101,6 @@ class ScraperService {
     } catch (error) {
       logger.error("Failed to update job stats:", error);
     }
-  }
-
-  async initBrowserPool() {
-    try {
-      for (let i = 0; i < BROWSER_POOL_SIZE; i++) {
-        const browser = await puppeteer.launch({
-          headless: "new",
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-accelerated-2d-canvas",
-            "--disable-gpu",
-            "--js-flags=--max-old-space-size=512", // Giới hạn memory cho V8
-          ],
-        });
-        this.browserPool.push(browser);
-      }
-      logger.info(
-        `Browser pool initialized with ${BROWSER_POOL_SIZE} instances`
-      );
-    } catch (error) {
-      logger.error("Failed to initialize browser pool:", error);
-      throw error;
-    }
-  }
-
-  async getBrowserFromPool() {
-    // Simple round-robin from pool
-    const browser = this.browserPool.shift();
-    this.browserPool.push(browser);
-    return browser;
   }
 
   async processScrapedData(urls, media, accountId) {
@@ -247,8 +219,13 @@ class ScraperService {
   }
 
   async scrapeImageAndVideoURLs(urls, browser) {
+    console.log(
+      "🚀 ~ ScraperService ~ scrapeImageAndVideoURLs ~ browser:",
+      browser
+    );
     const results = [];
     const page = await browser.newPage();
+    console.log("🚀 ~ ScraperService ~ scrapeImageAndVideoURLs ~ page:", page);
 
     try {
       await page.setUserAgent(
@@ -386,7 +363,7 @@ class ScraperService {
 
     while (currentAttempt < MAX_RETRIES) {
       try {
-        const browser = await this.getBrowserFromPool();
+        const browser = await browserManager.getBrowser();
         const media = await this.scrapeImageAndVideoURLs(urls, browser);
         return await this.processScrapedData(urls, media, accountId);
       } catch (error) {

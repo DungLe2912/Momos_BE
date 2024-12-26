@@ -2,6 +2,8 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 
+import { browserManager } from "./utils/browser.js";
+
 import { authRouter } from "./routers/auth.router.js";
 import { scrapingRouter } from "./routers/scrap.router.js";
 import { mediaRouter } from "./routers/media.router.js";
@@ -13,6 +15,17 @@ import {
 } from "./middlewares/index.js";
 
 const app = express();
+
+// Initialize browser when app starts
+(async () => {
+  try {
+    await browserManager.init();
+    console.log("Browser initialized on app start");
+  } catch (error) {
+    console.error("Failed to initialize browser on app start:", error);
+    process.exit(1);
+  }
+})();
 
 const { PORT } = process.env;
 

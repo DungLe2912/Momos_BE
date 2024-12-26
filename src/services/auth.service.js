@@ -36,13 +36,16 @@ export class AuthService {
     if (!isValidPassword) throw new Error("Invalid email or password");
     const accessTokenSecret = `${process.env.ACCESS_SECRET_KEY}`;
     const refreshTokenSecret = `${process.env.REFRESH_SECRET_KEY}`;
+    const accessTokenExpiry = `${process.env.ACCESS_TOKEN_EXPIRY}`;
+    const refreshTokenExpiry = `${process.env.REFRESH_TOKEN_EXPIRY}`;
+
     const accessToken = await this.#generateToken(
       {
         id: user.id,
         email: user.email,
       },
       accessTokenSecret,
-      process.env.ACCESS_TOKEN_EXPIRY
+      accessTokenExpiry
     );
     const refreshToken = await this.#generateToken(
       {
@@ -50,7 +53,7 @@ export class AuthService {
         email: user.email,
       },
       refreshTokenSecret,
-      process.env.REFRESH_TOKEN_EXPIRY
+      refreshTokenExpiry
     );
     return {
       user: {
@@ -72,21 +75,27 @@ export class AuthService {
     } catch (error) {
       throw new Error("Invalid refresh token");
     }
+
+    const accessTokenSecret = `${process.env.ACCESS_SECRET_KEY}`;
+    const refreshTokenSecret = `${process.env.REFRESH_SECRET_KEY}`;
+    const accessTokenExpiry = `${process.env.ACCESS_TOKEN_EXPIRY}`;
+    const refreshTokenExpiry = `${process.env.REFRESH_TOKEN_EXPIRY}`;
+
     const newAccessToken = await this.#generateToken(
       {
         id: user.id,
         email: user.email,
       },
-      process.env.ACCESS_SECRET_KEY,
-      process.env.ACCESS_TOKEN_EXPIRY
+      accessTokenSecret,
+      accessTokenExpiry
     );
     const newRefreshToken = await this.#generateToken(
       {
         id: user.id,
         email: user.email,
       },
-      process.env.REFRESH_SECRET_KEY,
-      process.env.REFRESH_TOKEN_EXPIRY
+      refreshTokenSecret,
+      refreshTokenExpiry
     );
 
     return {
