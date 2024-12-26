@@ -18,7 +18,7 @@ class BrowserManager {
         console.log("Initializing browser...");
 
         this.browser = await puppeteer.launch({
-          headless: false,
+          headless: true,
           executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
           args: [
             "--no-sandbox",
