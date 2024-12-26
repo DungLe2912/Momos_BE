@@ -219,14 +219,8 @@ class ScraperService {
   }
 
   async scrapeImageAndVideoURLs(urls, browser) {
-    console.log(
-      "🚀 ~ ScraperService ~ scrapeImageAndVideoURLs ~ browser:",
-      browser
-    );
     const results = [];
     const page = await browser.newPage();
-    console.log("🚀 ~ ScraperService ~ scrapeImageAndVideoURLs ~ page:", page);
-
     try {
       await page.setUserAgent(
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"

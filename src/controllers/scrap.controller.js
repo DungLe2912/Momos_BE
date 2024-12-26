@@ -2,7 +2,7 @@
 /* eslint-disable function-paren-newline */
 /* eslint-disable implicit-arrow-linebreak */
 /* eslint-disable no-restricted-syntax */
-import ScraperService from "../services/scrap.service.js";
+import ScraperService from "../services/scrape.service.js";
 import { logger } from "../middlewares/logger.middleware.js";
 
 export class ScrapingController {
