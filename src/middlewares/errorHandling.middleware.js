@@ -1,5 +1,4 @@
 export const errorHandlingMiddleware = (err, req, res, next) => {
-  console.log("🚀 ~ errorHandlingMiddleware ~ err:", err);
   console.error(`[ERROR] ${err.message}`);
   console.error(err.stack);
 
